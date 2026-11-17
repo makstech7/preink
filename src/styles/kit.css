@@ -484,6 +484,9 @@
   pointer-events: none;
   font-size: 1.2255cqw;
 }
+.wm span::before {
+  content: 'Preview';
+}
 .wm span {
   font-family: 'Hanken Grotesk', system-ui, sans-serif;
   font-size: 3em;

@@ -1,6 +1,6 @@
-import { COLORS, COUNTRIES, LOGO_FONTS, SERVICES, US_STATES } from '../kit/catalog';
+import { COLORS, COUNTRIES, DEFAULT_TIER, LOGO_FONTS, SERVICES, TIERS, US_STATES } from '../kit/catalog';
 import { STYLES } from '../kit/styles';
-import type { KitInput, LogoCase, LogoMode, ServiceId, StyleId } from '../kit/types';
+import type { KitInput, LogoCase, LogoMode, ServiceId, StyleId, TierId } from '../kit/types';
 
 // This module is the single gate for anything a visitor types or picks. It has
 // no browser dependencies so the server can run the same checks in Phase 2.
@@ -18,6 +18,7 @@ export const DEFAULT_INPUT: KitInput = {
   country: 'US',
   state: '',
   style: 'soft-luxury',
+  tier: DEFAULT_TIER,
 };
 
 // Control characters, invisible formatting characters (zero-width, soft hyphen,
@@ -71,5 +72,6 @@ export function sanitizeInput(raw: unknown): KitInput {
     country,
     state,
     style: oneOf<StyleId>(src.style, STYLES.map((s) => s.id), DEFAULT_INPUT.style),
+    tier: oneOf<TierId>(src.tier, TIERS.map((t) => t.id), DEFAULT_INPUT.tier),
   };
 }

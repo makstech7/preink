@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { assembleKit } from '../src/kit/assemble';
-import { US_STATES } from '../src/kit/catalog';
+import { TIERS, US_STATES } from '../src/kit/catalog';
 import { jurisdictionNotice, jurisdictionStatus } from '../src/kit/jurisdictions';
 import { DISCLAIMER, renderPage, type RenderContext } from '../src/kit/render';
 import { STYLES } from '../src/kit/styles';
@@ -8,9 +8,64 @@ import type { KitInput } from '../src/kit/types';
 import { esc, html } from '../src/lib/html';
 import { sanitizeInput } from '../src/lib/validate';
 
+// The full kit unless a test picks a smaller tier.
 function kit(overrides: Partial<KitInput> = {}): KitInput {
-  return { ...sanitizeInput({ studio: 'Marlowe Brow Studio', state: 'TX' }), ...overrides };
+  return { ...sanitizeInput({ studio: 'Marlowe Brow Studio', state: 'TX', tier: 'launch' }), ...overrides };
 }
+
+describe('tiers', () => {
+  const ids = (tier: KitInput['tier']) => assembleKit(kit({ tier, services: ['brows', 'lips'] })).map((p) => p.id);
+  const safety = ['consent-brows', 'consent-lips', 'medical-history', 'precare-brows', 'precare-lips', 'aftercare-brows', 'aftercare-lips', 'photo-release'];
+
+  it('puts the client safety forms in every tier', () => {
+    for (const tier of TIERS) for (const id of safety) expect(ids(tier.id)).toContain(id);
+  });
+
+  it('adds policies and pricing from Studio, and the launch plan only in Launch', () => {
+    expect(ids('essentials')).not.toContain('policies');
+    expect(ids('essentials')).not.toContain('price-menu');
+    expect(ids('studio')).toEqual(expect.arrayContaining(['policies', 'price-menu', 'pricing-calculator']));
+    expect(ids('studio')).not.toContain('launch-checklist');
+    expect(ids('launch')).toEqual(expect.arrayContaining(['model-call', 'first-ten-clients', 'launch-checklist']));
+  });
+
+  it('each tier contains everything in the cheaper ones and costs more', () => {
+    for (let i = 1; i < TIERS.length; i++) {
+      const [lower, higher] = [TIERS[i - 1]!, TIERS[i]!];
+      expect(ids(higher.id)).toEqual(expect.arrayContaining(ids(lower.id)));
+      expect(higher.price).toBeGreaterThan(lower.price);
+    }
+  });
+
+  it('gives each service its own pre-care sheet, placed before its aftercare card', () => {
+    const pages = assembleKit(kit({ tier: 'essentials', services: ['brows', 'lips', 'liner'] }));
+    const order = pages.map((p) => p.id);
+    for (const s of ['brows', 'lips', 'liner']) {
+      expect(order.indexOf(`precare-${s}`)).toBeGreaterThan(-1);
+      expect(order.indexOf(`precare-${s}`)).toBeLessThan(order.indexOf(`aftercare-${s}`));
+    }
+    const lips = JSON.stringify(pages.find((p) => p.id === 'precare-lips'));
+    expect(lips).toContain('cold sores');
+  });
+
+  it('uses booking-fee wording with a signed acknowledgment, plus a guide for the artist', () => {
+    const pages = assembleKit(kit({ tier: 'studio' }));
+    const policy = pages.find((p) => p.id === 'policies');
+    const text = JSON.stringify(policy);
+    expect(text).toContain('non-refundable booking fee');
+    expect(text).not.toMatch(/\bdeposit\b/i);
+    expect(policy?.blocks.some((b) => b.t === 'initials')).toBe(true);
+    expect(policy?.blocks.at(-1)?.t).toBe('sign');
+    const guide = JSON.stringify(pages.find((p) => p.id === 'policy-guide'));
+    expect(guide).toContain('not a guarantee');
+    expect(guide).not.toMatch(/you will win|guaranteed/i);
+    expect(assembleKit(kit({ tier: 'essentials' })).map((p) => p.id)).not.toContain('policy-guide');
+  });
+
+  it('falls back to Studio for an unknown tier', () => {
+    expect(sanitizeInput({ tier: 'free' }).tier).toBe('studio');
+  });
+});
 
 function renderAll(input: KitInput, logoUrl: string | null = null): string[] {
   const pages = assembleKit(input);
@@ -130,5 +185,24 @@ describe('jurisdictions', () => {
       expect(notice).toMatch(/^General version\./);
       expect(notice).toMatch(/[Cc]onfirm/);
     }
+  });
+});
+
+describe('style colors', () => {
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    }) as [number, number, number];
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrast = (a: string, b: string) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  it.each(STYLES.map((s) => [s.name, s.tokens] as const))('%s keeps small grey text readable (4.5:1)', (_name, tokens) => {
+    expect(contrast(tokens['--k-muted'] as string, tokens['--k-paper'] as string)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(tokens['--k-ink'] as string, tokens['--k-paper'] as string)).toBeGreaterThanOrEqual(4.5);
   });
 });

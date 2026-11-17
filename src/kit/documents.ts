@@ -98,6 +98,39 @@ export function medicalHistory(): DocDef {
   };
 }
 
+// One visible line per service. Timings and medical specifics stay withheld
+// until a working artist has reviewed them.
+const PRECARE_NOTE: Record<string, string> = {
+  brows: 'Do not wax, tint or thread your brows in the days before your appointment. Your artist will tell you how long to wait.',
+  lips: 'If you have ever had cold sores, tell your artist when you book and ask your doctor about it before your appointment.',
+  liner: 'Do not wear contact lenses or eyelash extensions to your appointment. Bring your glasses if you need them.',
+};
+
+export function precare(ctx: DocContext, service: Service): DocDef {
+  return {
+    id: `precare-${service.id}`,
+    title: `${service.title} Pre-care`,
+    kind: 'policy',
+    blocks: [
+      {
+        t: 'p',
+        text: `How to get ready for your ${service.title.toLowerCase()} appointment at ${ctx.studio}. Following these steps helps the pigment settle evenly and heal well.`,
+      },
+      {
+        t: 'steps',
+        items: [
+          { label: 'When you book', text: 'Fill in your health history form honestly, including any medication you take. Your artist needs it to decide whether the procedure is right for you today.' },
+          { label: 'Before you come', text: PRECARE_NOTE[service.id] ?? 'Follow any instructions your artist gives you when you book.' },
+        ],
+      },
+      { t: 'greek', heading: 'The week before', lines: 4 },
+      { t: 'greek', heading: 'The day before and the day of', lines: 4 },
+      { t: 'greek', heading: 'When to reschedule', lines: 3 },
+      { t: 'fields', rows: [[{ label: `${ctx.studio} phone`, w: 2 }, { label: 'Your appointment', w: 2 }]] },
+    ],
+  };
+}
+
 export function aftercare(ctx: DocContext, service: Service): DocDef {
   return {
     id: `aftercare-${service.id}`,
@@ -158,19 +191,55 @@ export function policies(ctx: DocContext): DocDef {
     id: 'policies',
     title: 'Studio Policies',
     kind: 'policy',
+    // "Booking fee" plus a signed, dated acknowledgment follows industry guidance on
+    // card disputes. It is good practice, not a guarantee, and needs lawyer review.
     blocks: [
       { t: 'p', text: `How booking works at ${ctx.studio}. Please read before you reserve a time.` },
-      { t: 'h', text: 'Deposit' },
-      { t: 'p', text: 'A deposit of $______ holds your appointment and is applied to the price of your procedure.' },
-      { t: 'greek', lines: 3 },
-      { t: 'h', text: 'Cancelling or moving your appointment' },
-      { t: 'p', text: 'Please give at least ______ hours’ notice if you need to change your time.' },
-      { t: 'greek', lines: 3 },
+      { t: 'h', text: 'Booking fee' },
+      { t: 'p', text: 'A non-refundable booking fee of $______ reserves your appointment time. It is taken off the price of your procedure when you attend.' },
+      { t: 'greek', lines: 2 },
+      { t: 'h', text: 'Moving or cancelling your appointment' },
+      { t: 'p', text: 'You can move your appointment once at no charge with at least ______ hours’ notice. With less notice, or after a second change, the booking fee is kept.' },
+      { t: 'greek', lines: 2 },
       { t: 'h', text: 'Touch-ups' },
       { t: 'p', text: 'Your first touch-up is booked ______ weeks after your procedure, once the skin has healed.' },
-      { t: 'greek', lines: 3 },
+      { t: 'greek', lines: 2 },
       { t: 'greek', heading: 'Late arrival', lines: 2 },
+      { t: 'h', text: 'I have read and agree' },
+      {
+        t: 'initials',
+        items: [
+          'The booking fee is non-refundable and comes off the price of my procedure.',
+          'I can move my appointment once with the notice above; otherwise the booking fee is kept.',
+        ],
+      },
       { t: 'sign', parties: ['Client signature'] },
+    ],
+  };
+}
+
+/** For the artist, not the client: how to apply the policies consistently. */
+export function policyGuide(): DocDef {
+  return {
+    id: 'policy-guide',
+    title: 'Using Your Policies',
+    kind: 'business',
+    blocks: [
+      {
+        t: 'p',
+        text: 'Policies only help if clients see them before they pay and you apply them the same way every time. These habits make that easier. They are good practice, not a guarantee of how any dispute ends.',
+      },
+      {
+        t: 'steps',
+        items: [
+          { label: 'Before they pay', text: 'Show the policy where clients book, and link to it in your booking confirmation. Call it a booking fee, not a deposit.' },
+          { label: 'In writing', text: 'Have the client initial and sign the policy page, or tick a dated box when booking online. Keep it with their client record.' },
+          { label: 'Every time', text: 'Apply the same rules to friends, models and regulars. Exceptions are hard to explain later.' },
+        ],
+      },
+      { t: 'greek', heading: 'Reminder messages', lines: 4 },
+      { t: 'greek', heading: 'When a client asks for the fee back', lines: 4 },
+      { t: 'greek', heading: 'If a client disputes the charge with their bank', lines: 4 },
     ],
   };
 }

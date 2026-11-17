@@ -560,6 +560,184 @@ h3 {
   color: var(--soft);
 }
 
+/* ---------- Hero points ---------- */
+
+.hero-points {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  max-width: 32em;
+}
+.hero-points li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 16px;
+  color: var(--soft);
+}
+.hero-points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 9px;
+  height: 5px;
+  margin-top: 8px;
+  border-left: 1.5px solid var(--clay);
+  border-bottom: 1.5px solid var(--clay);
+  transform: rotate(-45deg);
+}
+.hero-points strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---------- Comparison ---------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.compare-scroll {
+  margin-top: 32px;
+  overflow-x: auto;
+}
+.compare {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.compare th,
+.compare td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.compare thead th {
+  border-bottom: 1px solid var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.compare tbody th {
+  font-weight: 500;
+}
+.compare td {
+  color: var(--soft);
+}
+.compare .is-us {
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 600;
+}
+.compare thead .is-us {
+  color: var(--clay-deep);
+}
+.compare-note {
+  margin-top: 18px;
+  max-width: 44em;
+  font-size: 15px;
+  color: var(--soft);
+}
+
+.tiers-note {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 15px;
+  color: var(--soft);
+}
+
+/* ---------- Pricing ---------- */
+
+.tiers {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+}
+.tier {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 22px 26px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--card);
+}
+.tier.is-popular {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.tier h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+.tier h3 em {
+  margin-left: 6px;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--clay-deep);
+}
+.tier-cost {
+  margin-top: 12px;
+  font-size: 15px;
+  color: var(--soft);
+}
+.tier-cost span {
+  margin-right: 4px;
+  font-family: var(--serif);
+  font-size: 44px;
+  line-height: 1;
+  color: var(--ink);
+}
+.tier-line {
+  margin-top: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 500;
+}
+.tier ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tier li {
+  display: flex;
+  gap: 10px;
+  padding: 9px 0 0;
+  font-size: 15px;
+  color: var(--soft);
+}
+.tier li::before {
+  content: '';
+  flex: none;
+  width: 9px;
+  height: 5px;
+  margin-top: 7px;
+  border-left: 1.5px solid var(--clay);
+  border-bottom: 1.5px solid var(--clay);
+  transform: rotate(-45deg);
+}
+.tiers-cta {
+  margin-top: 28px;
+  text-align: center;
+}
+
+@media (min-width: 700px) {
+  .tiers {
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
+  }
+}
+
 .closing-more {
   margin-top: 18px;
   margin-bottom: 0;

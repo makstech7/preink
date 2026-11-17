@@ -4,7 +4,7 @@ import './styles/kit.css';
 
 import { applyKitStyle } from './kit/apply';
 import { assembleKit, PLACEHOLDER_STUDIO } from './kit/assemble';
-import { COLORS, COUNTRIES, EDITION, LOGO_FONTS, SERVICES, US_STATES } from './kit/catalog';
+import { COLORS, COUNTRIES, LOGO_FONTS, SERVICES, TIERS, tierById, US_STATES } from './kit/catalog';
 import { jurisdictionSummary } from './kit/jurisdictions';
 import { renderPage } from './kit/render';
 import { STYLES, styleById } from './kit/styles';
@@ -142,6 +142,20 @@ function buildForm(): void {
       </div>
       <p class="status" id="place-status" aria-live="polite"></p>
     </fieldset>
+
+    <fieldset class="step">
+      <legend><span class="num">06</span>Choose your kit</legend>
+      <div class="tiers-pick">
+        ${TIERS.map(
+          (t) => html`<label class="tier-opt">
+            <input type="radio" name="tier" value="${t.id}" ${input.tier === t.id ? 'checked' : ''}>
+            <span class="tier-name">${t.name}${t.id === 'studio' ? html` <em>Most popular</em>` : ''}</span>
+            <span class="tier-price">$${t.price}</span>
+            <span class="tier-sum">${t.summary}</span>
+          </label>`,
+        )}
+      </div>
+    </fieldset>
   `.value;
 
   // Swatch colours are set through the CSSOM, not style attributes, so the CSP can forbid inline styles.
@@ -167,6 +181,7 @@ function readForm(): KitInput {
     country: data.get('country'),
     state: data.get('state'),
     style: input.style,
+    tier: data.get('tier'),
   });
 }
 
@@ -193,7 +208,8 @@ function renderPreview(): void {
 
   const count = `${pages.length - 1} documents`;
   must('#preview-sub').textContent = `${count}, ${styleById(input.style).name.toLowerCase()} style`;
-  must('#buy-count').textContent = `${count} for your studio`;
+  must('#buy-count').textContent = `${tierById(input.tier).name} kit: ${count}`;
+  must('#buy-price').textContent = `· $${tierById(input.tier).price}`;
 }
 
 function updateFormHints(): void {
@@ -353,6 +369,5 @@ must('#buy').addEventListener('click', () => buyDialog.showModal());
 
 // ---------- Start ----------
 
-must('#buy-price').textContent = `· $${EDITION.price}`;
 buildForm();
 refresh();

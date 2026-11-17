@@ -1,4 +1,4 @@
-import type { ServiceId } from './types';
+import type { ServiceId, TierId } from './types';
 
 /**
  * The edition is configuration, not code. A tattoo edition later is a second
@@ -8,8 +8,33 @@ export const EDITION = {
   id: 'pmu',
   name: 'PMU edition',
   templateVersion: '0.1 draft',
-  price: 47,
 } as const;
+
+export interface Tier {
+  id: TierId;
+  name: string;
+  price: number;
+  /** One line for the price table and the tier picker. */
+  summary: string;
+}
+
+/** Ordered cheapest first. Each tier includes everything in the tiers before it. */
+export const TIERS: readonly Tier[] = [
+  { id: 'essentials', name: 'Essentials', price: 29, summary: 'The forms you hand every client' },
+  { id: 'studio', name: 'Studio', price: 49, summary: 'Plus your policies, price menu and pricing calculator' },
+  { id: 'launch', name: 'Launch', price: 79, summary: 'Plus a plan for your first clients and all five styles' },
+];
+
+export const DEFAULT_TIER: TierId = 'studio';
+
+export function tierById(id: TierId): Tier {
+  return TIERS.find((t) => t.id === id) ?? (TIERS[1] as Tier);
+}
+
+/** True when a kit bought at `tier` includes something first offered at `from`. */
+export function tierIncludes(tier: TierId, from: TierId): boolean {
+  return TIERS.findIndex((t) => t.id === tier) >= TIERS.findIndex((t) => t.id === from);
+}
 
 export interface Service {
   id: ServiceId;

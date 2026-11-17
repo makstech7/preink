@@ -1,7 +1,7 @@
-import { EDITION, serviceById } from './catalog';
+import { EDITION, serviceById, tierIncludes } from './catalog';
 import * as docs from './documents';
 import { placeName } from './jurisdictions';
-import type { KitInput, KitPage } from './types';
+import type { KitInput, KitPage, TierId } from './types';
 
 export const PLACEHOLDER_STUDIO = 'Your Studio Name';
 
@@ -12,18 +12,19 @@ export function assembleKit(input: KitInput): KitPage[] {
     services: input.services.map(serviceById),
   };
 
-  const body: KitPage[] = [
-    ...ctx.services.map((s) => docs.consentForm(ctx, s)),
-    docs.medicalHistory(),
-    ...ctx.services.map((s) => docs.aftercare(ctx, s)),
-    docs.photoRelease(ctx),
-    docs.policies(ctx),
-    docs.priceMenu(ctx),
-    docs.pricingCalculator(),
-    docs.modelCallScript(ctx),
-    docs.firstTenClients(),
-    docs.launchChecklist(),
+  // Client safety forms are in every tier; no buyer should be without them.
+  const byTier: [TierId, KitPage[]][] = [
+    ['essentials', [
+      ...ctx.services.map((s) => docs.consentForm(ctx, s)),
+      docs.medicalHistory(),
+      ...ctx.services.map((s) => docs.precare(ctx, s)),
+      ...ctx.services.map((s) => docs.aftercare(ctx, s)),
+      docs.photoRelease(ctx),
+    ]],
+    ['studio', [docs.policies(ctx), docs.policyGuide(), docs.priceMenu(ctx), docs.pricingCalculator()]],
+    ['launch', [docs.modelCallScript(ctx), docs.firstTenClients(), docs.launchChecklist()]],
   ];
+  const body = byTier.filter(([from]) => tierIncludes(input.tier, from)).flatMap(([, pages]) => pages);
 
   const where = placeName(input.country, input.state);
   const summary = [ctx.services.map((s) => s.label).join(' · '), where].filter(Boolean).join('  /  ');

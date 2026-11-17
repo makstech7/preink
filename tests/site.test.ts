@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { EDITION } from '../src/kit/catalog';
+import { TIERS } from '../src/kit/catalog';
 
 // Checks on the two HTML pages: search-engine basics, and that nothing in them
 // would be blocked by (or weaken) the Content-Security-Policy.
@@ -51,10 +51,19 @@ describe('home page content', () => {
     }
   });
 
-  it('states the same price as the product configuration', () => {
+  it('only states prices that exist in the tier configuration', () => {
+    const allowed = TIERS.map((t) => `$${t.price}`);
     const prices = home.match(/\$\d+/g) ?? [];
     expect(prices.length).toBeGreaterThan(0);
-    for (const price of prices) expect(price).toBe(`$${EDITION.price}`);
+    for (const price of prices) expect(allowed).toContain(price);
+  });
+
+  it('shows each tier in the price table at its configured price', () => {
+    for (const tier of TIERS) {
+      const card = home.match(new RegExp(`<article class="tier[^"]*" data-tier="${tier.id}"[\\s\\S]*?</article>`))?.[0] ?? '';
+      expect(card).toContain(`<h3>${tier.name}`);
+      expect(card).toContain(`<span>$${tier.price}</span>`);
+    }
   });
 
   it('has valid structured data whose questions match the visible ones', () => {
@@ -72,7 +81,7 @@ describe('home page content', () => {
   it('never promises legal cover or that every state is included', () => {
     const body = text(home).toLowerCase();
     expect(body).toContain('not legal advice');
-    for (const claim of ['legally compliant', 'guaranteed', 'all 50 states', 'lawyer-approved', 'attorney-approved']) {
+    for (const claim of ['legally compliant', 'guaranteed', 'all 50 states', 'lawyer-approved', 'lawyer approved', 'attorney-approved', 'protects you', 'win the dispute', 'win disputes']) {
       expect(body).not.toContain(claim);
     }
   });
@@ -259,5 +268,12 @@ describe('photos and motion', () => {
       if (/(^|\s)from$/.test(selector) || selector.includes('is-swapping')) continue;
       expect(selector).toContain('.js-motion');
     }
+  });
+});
+
+describe('caching', () => {
+  it('caches hashed build files for a year and photos for a day', () => {
+    expect(headers).toMatch(/\/assets\/\*\n\s+Cache-Control: public, max-age=31536000, immutable/);
+    expect(headers).toMatch(/\/photos\/\*\n\s+Cache-Control: public, max-age=86400/);
   });
 });

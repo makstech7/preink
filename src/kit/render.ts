@@ -82,7 +82,7 @@ function renderBlock(block: Block, ctx: RenderContext): Safe {
 }
 
 function watermark(): Safe {
-  return html`<div class="wm" aria-hidden="true">${Array.from({ length: 15 }, () => html`<span>Preview</span>`)}</div>`;
+  return html`<div class="wm" aria-hidden="true">${Array.from({ length: 15 }, () => html`<span></span>`)}</div>`;
 }
 
 export function renderPage(page: KitPage, ctx: RenderContext): Safe {

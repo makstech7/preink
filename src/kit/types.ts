@@ -2,6 +2,7 @@ export type ServiceId = 'brows' | 'lips' | 'liner';
 export type StyleId = 'minimal' | 'soft-luxury' | 'modern-bold' | 'feminine' | 'clinical';
 export type LogoMode = 'text' | 'upload';
 export type LogoCase = 'asis' | 'upper';
+export type TierId = 'essentials' | 'studio' | 'launch';
 
 /** Everything the artist tells us. Nothing about their clients, ever. */
 export interface KitInput {
@@ -15,6 +16,7 @@ export interface KitInput {
   country: string;
   state: string;
   style: StyleId;
+  tier: TierId;
 }
 
 export type DocKind = 'cover' | 'legal' | 'policy' | 'business';
