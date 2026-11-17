@@ -61,7 +61,7 @@ function buildForm(): void {
   form.innerHTML = html`
     <fieldset class="step">
       <legend><span class="num">01</span>Studio name</legend>
-      <input class="text-input" id="studio" name="studio" type="text" maxlength="${LIMITS.studioMax}"
+      <input class="text-input" id="studio" name="studio" type="text" aria-label="Studio name" maxlength="${LIMITS.studioMax}"
         value="${input.studio}" placeholder="Marlowe Brow Studio" autocapitalize="words" spellcheck="false"
         enterkeyhint="done" aria-describedby="studio-hint studio-error">
       <p class="hint" id="studio-hint">Spelled the way you want it printed.</p>
@@ -268,6 +268,10 @@ nextBtn.addEventListener('click', () => goTo(current + 1));
 rail.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') goTo(current + 1);
   if (event.key === 'ArrowLeft') goTo(current - 1);
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    pageEls()[current]?.click();
+  }
 });
 
 // ---------- Enlarge a page ----------

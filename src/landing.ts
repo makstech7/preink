@@ -92,6 +92,18 @@ function startLiveSample(el: HTMLElement): void {
   let styleIndex = Math.max(0, order.indexOf((el.dataset.style ?? '') as StyleId));
   let timer = 0;
   let visible = true;
+  let paused = false;
+
+  // Anything that moves for more than five seconds needs a way to stop it.
+  const pause = document.querySelector<HTMLButtonElement>('[data-live-pause]');
+  if (pause) {
+    pause.hidden = false;
+    pause.addEventListener('click', () => {
+      paused = !paused;
+      pause.textContent = paused ? 'Play' : 'Pause';
+      pause.setAttribute('aria-pressed', String(paused));
+    });
+  }
 
   const setLabel = (id: StyleId) => {
     if (label) label.textContent = `${STYLES.find((s) => s.id === id)?.name ?? ''} style`;
@@ -112,7 +124,7 @@ function startLiveSample(el: HTMLElement): void {
   };
 
   const next = () => {
-    if (!visible || document.hidden) {
+    if (paused || !visible || document.hidden) {
       timer = window.setTimeout(next, 1000);
       return;
     }

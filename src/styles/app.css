@@ -21,6 +21,11 @@
   box-sizing: border-box;
 }
 
+/* A display rule on a class must never un-hide an element marked hidden. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
