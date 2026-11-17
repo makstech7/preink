@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Build Your PMU Studio Kit Preview | PreInk</title>
+    <meta
+      name="description"
+      content="Add your studio name, logo and services and look through your branded PMU consent forms, aftercare cards and policies before you pay."
+    />
+    <link rel="canonical" href="https://getpreink.com/kit/" />
+    <meta name="theme-color" content="#F5F0EA" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#preview">Skip to your kit preview</a>
+
+    <header class="top">
+      <a class="brand" href="/" aria-label="PreInk home">PreInk</a>
+      <a class="top-back" href="/#inside">What’s in the kit</a>
+    </header>
+
+    <main class="layout">
+      <section class="build" aria-labelledby="build-title">
+        <h1 id="build-title">Build your kit preview</h1>
+        <p class="lede">
+          Answer five things and look through every page in your studio’s style. Nothing to pay until you are happy with
+          it.
+        </p>
+
+        <form id="kit-form" novalidate autocomplete="off"></form>
+
+        <p class="privacy">
+          What you enter stays in this browser until you check out. PreInk never asks for your clients’ names or health
+          details.
+        </p>
+      </section>
+
+      <section class="preview" id="preview" aria-labelledby="preview-title">
+        <div class="preview-head">
+          <h2 id="preview-title">Your kit</h2>
+          <p class="preview-sub" id="preview-sub"></p>
+        </div>
+
+        <div class="styles" id="style-picker" role="radiogroup" aria-label="Kit style"></div>
+
+        <div class="rail kit" id="rail" tabindex="0" aria-label="Kit pages. Swipe or use the arrows."></div>
+
+        <div class="pager">
+          <button type="button" class="pager-btn" id="prev" aria-label="Previous page">
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+          <p class="pager-label" aria-live="polite"><span id="page-title"></span> <span class="pager-count" id="page-count"></span></p>
+          <button type="button" class="pager-btn" id="next" aria-label="Next page">
+            <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="m7.5 4 6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </button>
+        </div>
+
+        <p class="preview-note">
+          Tap a page to enlarge it. Grey bars stand in for wording that is included in the kit you buy. Every form is a
+          template, not legal advice.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-foot">
+      <p>PreInk provides templates, not legal advice. Rules for permanent makeup differ by state, county and city.</p>
+      <nav class="site-foot-links" aria-label="Legal">
+        <a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="/refunds/">Refunds</a>
+      </nav>
+    </footer>
+
+    <div class="buybar" role="region" aria-label="Buy your kit">
+      <p class="buybar-text"><strong id="buy-count"></strong><span>One payment. Yours to print as often as you like.</span></p>
+      <a class="btn btn-quiet buybar-peek" href="#preview">See my kit</a>
+      <button type="button" class="btn btn-solid" id="buy">Get my kit <span id="buy-price"></span></button>
+    </div>
+
+    <dialog id="buy-dialog" class="sheet-dialog" aria-labelledby="buy-dialog-title">
+      <h2 id="buy-dialog-title">Checkout opens soon</h2>
+      <p>
+        This is the preview build of PreInk. Secure card payment and delivery of your finished PDFs by email are the
+        next step in the build.
+      </p>
+      <form method="dialog"><button class="btn btn-solid">Back to my kit</button></form>
+    </dialog>
+
+    <dialog id="zoom-dialog" class="zoom-dialog" aria-label="Enlarged page">
+      <form method="dialog" class="zoom-bar"><button class="btn btn-quiet">Close</button></form>
+      <div class="zoom-scroll"><div class="zoom-stage kit" id="zoom-stage"></div></div>
+    </dialog>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

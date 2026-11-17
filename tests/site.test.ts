@@ -1,0 +1,151 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+import { EDITION } from '../src/kit/catalog';
+
+// Checks on the two HTML pages: search-engine basics, and that nothing in them
+// would be blocked by (or weaken) the Content-Security-Policy.
+
+const home = readFileSync('index.html', 'utf8');
+const kit = readFileSync('kit/index.html', 'utf8');
+const headers = readFileSync('public/_headers', 'utf8');
+
+const text = (s: string) => s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const meta = (page: string, name: string) =>
+  page.match(new RegExp(`<meta\\s+name="${name}"\\s+content="([^"]*)"`))?.[1] ?? '';
+
+describe.each([
+  ['home', home, 'https://getpreink.com/'],
+  ['kit', kit, 'https://getpreink.com/kit/'],
+])('%s page', (_name, page, canonical) => {
+  it('has exactly one h1', () => {
+    expect(page.match(/<h1[\s>]/g)).toHaveLength(1);
+  });
+
+  it('has a title and description of a sensible length', () => {
+    const title = text(page.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? '').replace('&amp;', '&');
+    expect(title.length).toBeGreaterThan(25);
+    expect(title.length).toBeLessThanOrEqual(65);
+    expect(meta(page, 'description').length).toBeGreaterThan(90);
+    expect(meta(page, 'description').length).toBeLessThanOrEqual(165);
+  });
+
+  it('declares its canonical address on the live domain', () => {
+    expect(page).toContain(`<link rel="canonical" href="${canonical}"`);
+  });
+
+  it('has no inline styles, inline scripts or event handlers', () => {
+    expect(page).not.toMatch(/\sstyle="/);
+    expect(page).not.toMatch(/<style[\s>]/);
+    expect(page).not.toMatch(/\son[a-z]+="/);
+    const scripts = page.match(/<script[^>]*>/g) ?? [];
+    for (const tag of scripts) expect(tag).toMatch(/type="(module|application\/ld\+json)"/);
+    expect(page).not.toMatch(/https?:\/\/(?!getpreink\.com|schema\.org|www\.w3\.org)/);
+  });
+});
+
+describe('home page content', () => {
+  it('uses the words people search for', () => {
+    const body = text(home).toLowerCase();
+    for (const phrase of ['consent form', 'aftercare', 'permanent makeup', 'pmu', 'price menu', 'photo and video release']) {
+      expect(body).toContain(phrase);
+    }
+  });
+
+  it('states the same price as the product configuration', () => {
+    const prices = home.match(/\$\d+/g) ?? [];
+    expect(prices.length).toBeGreaterThan(0);
+    for (const price of prices) expect(price).toBe(`$${EDITION.price}`);
+  });
+
+  it('has valid structured data whose questions match the visible ones', () => {
+    const json = home.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1] ?? '';
+    const graph = JSON.parse(json)['@graph'] as { '@type': string; mainEntity?: { name: string; acceptedAnswer: { text: string } }[] }[];
+    const faq = graph.find((node) => node['@type'] === 'FAQPage');
+    const visible = [...home.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<p>([\s\S]*?)<\/p>/g)].map((m) => ({
+      q: text(m[1] ?? ''),
+      a: text(m[2] ?? ''),
+    }));
+    expect(visible.length).toBeGreaterThanOrEqual(5);
+    expect(faq?.mainEntity?.map((e) => ({ q: e.name, a: e.acceptedAnswer.text }))).toEqual(visible);
+  });
+
+  it('never promises legal cover or that every state is included', () => {
+    const body = text(home).toLowerCase();
+    expect(body).toContain('not legal advice');
+    for (const claim of ['legally compliant', 'guaranteed', 'all 50 states', 'lawyer-approved', 'attorney-approved']) {
+      expect(body).not.toContain(claim);
+    }
+  });
+
+  it('does not mention a gift certificate', () => {
+    expect(text(home).toLowerCase()).not.toContain('gift certificate');
+  });
+});
+
+describe('search and staging rules', () => {
+  it('points crawlers at the sitemap, which lists both pages', () => {
+    expect(readFileSync('public/robots.txt', 'utf8')).toContain('Sitemap: https://getpreink.com/sitemap.xml');
+    const sitemap = readFileSync('public/sitemap.xml', 'utf8');
+    expect(sitemap).toContain('<loc>https://getpreink.com/</loc>');
+    expect(sitemap).toContain('<loc>https://getpreink.com/kit/</loc>');
+  });
+
+  it('keeps the staging site out of search results', () => {
+    expect(headers).toMatch(/https:\/\/preink\.dev\/\*\n\s+X-Robots-Tag: noindex/);
+  });
+
+  it('keeps the strict policy: no inline or third-party script or style', () => {
+    const csp = headers.match(/Content-Security-Policy: (.*)/)?.[1] ?? '';
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain("script-src 'self';");
+    expect(csp).toContain("style-src 'self';");
+    expect(csp).not.toContain('unsafe');
+    expect(csp).toContain("frame-ancestors 'none'");
+  });
+});
+
+describe.each(['privacy', 'terms', 'refunds'])('%s page', (slug) => {
+  const page = readFileSync(`${slug}/index.html`, 'utf8');
+
+  it('is linked from the footer of every page, as a real link', () => {
+    for (const other of [home, kit, page]) expect(other).toContain(`<a href="/${slug}/">`);
+  });
+
+  it('has one h1, a description and its own canonical address', () => {
+    expect(page.match(/<h1[\s>]/g)).toHaveLength(1);
+    expect(meta(page, 'description').length).toBeGreaterThan(60);
+    expect(page).toContain(`<link rel="canonical" href="https://getpreink.com/${slug}/"`);
+  });
+
+  it('is marked as a draft and kept out of search until a lawyer has reviewed it', () => {
+    expect(page).toContain('data-draft');
+    expect(meta(page, 'robots')).toBe('noindex');
+    expect(readFileSync('public/sitemap.xml', 'utf8')).not.toContain(`/${slug}/`);
+  });
+
+  it('has no inline styles, inline scripts or event handlers', () => {
+    expect(page).not.toMatch(/\sstyle="/);
+    expect(page).not.toMatch(/\son[a-z]+="/);
+    for (const tag of page.match(/<script[^>]*>/g) ?? []) expect(tag).toContain('type="module"');
+  });
+});
+
+describe('legal page promises', () => {
+  const privacy = text(readFileSync('privacy/index.html', 'utf8'));
+  const refunds = text(readFileSync('refunds/index.html', 'utf8'));
+  const terms = text(readFileSync('terms/index.html', 'utf8'));
+
+  it('says client data is never collected and files are deleted after 30 days', () => {
+    expect(privacy).toContain('does not collect, see or store anything about your clients');
+    expect(privacy).toContain('deleted automatically 30 days');
+  });
+
+  it('says a refund switches off the download link', () => {
+    expect(refunds).toContain('download link is switched off');
+  });
+
+  it('says the kit is a template and not legal advice', () => {
+    expect(terms).toMatch(/not a law firm/);
+    expect(terms).toMatch(/legal, medical or professional advice/);
+  });
+});
