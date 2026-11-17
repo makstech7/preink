@@ -13,7 +13,7 @@ The owner is not a developer. Their wife is a working PMU artist, which is the i
 - When a message is ambiguous, say the two readings briefly, pick the likelier one, and keep moving. Ask a question only when the answer changes what gets built.
 - They prefer seeing a working result over reading plans. Build, then show it in the browser pane.
 - Show the "Still needed" list (bottom of this file) at the end of every phase, and keep it current.
-- Before spending Higgsfield credits, state the credit cost and wait for a yes. None have been spent so far.
+- Before spending Higgsfield credits, state the credit cost and wait for a yes. So far 0.5 credits were spent on the share image (`public/og.jpg`, source options in `design/share-image/`).
 - They said: do not make it look like AI wrote it. That covers design and copy. See "Design and copy" below.
 
 ## How to work
@@ -130,7 +130,6 @@ Keep this list current and show it at the end of every phase.
 - Lawyer review of the form wording and the three legal pages, plus one exported checklist document to send the lawyer
 - For the lawyer to supply: legal business name and address, governing law, and any wording needed for California or European visitors
 - Trademark and existing-business check on the name "PreInk"
-- A share image for social links (a candidate for Higgsfield, with credit approval)
 - Product structured data with the price, to add when checkout is live
 - Expected monthly cost at 0, 100 and 1,000 sales (asked for in the brief, not yet delivered)
 - Go-live checklist: Stripe live mode, Stripe Tax on, one real purchase and refund tested end to end

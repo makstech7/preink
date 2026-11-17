@@ -149,3 +149,15 @@ describe('legal page promises', () => {
     expect(terms).toMatch(/legal, medical or professional advice/);
   });
 });
+
+describe('share image', () => {
+  it('is a 1200 by 630 JPEG served from the live domain', () => {
+    const bytes = readFileSync('public/og.jpg');
+    expect([bytes[0], bytes[1], bytes[2]]).toEqual([0xff, 0xd8, 0xff]);
+    expect(bytes.byteLength).toBeLessThan(300 * 1024);
+    expect(home).toContain('<meta property="og:image" content="https://getpreink.com/og.jpg"');
+    expect(home).toContain('<meta property="og:image:width" content="1200"');
+    expect(home).toContain('<meta property="og:image:height" content="630"');
+    expect(home).toContain('content="summary_large_image"');
+  });
+});
