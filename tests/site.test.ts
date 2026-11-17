@@ -161,3 +161,103 @@ describe('share image', () => {
     expect(home).toContain('content="summary_large_image"');
   });
 });
+
+describe('microblading consent form page', () => {
+  const page = readFileSync('microblading-consent-form/index.html', 'utf8');
+  const body = text(page).toLowerCase();
+
+  it('has one h1, a good title and description, and its canonical address', () => {
+    expect(page.match(/<h1[\s>]/g)).toHaveLength(1);
+    const title = text(page.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? '');
+    expect(title.toLowerCase()).toContain('microblading consent form');
+    expect(title.length).toBeLessThanOrEqual(65);
+    expect(meta(page, 'description').length).toBeGreaterThan(90);
+    expect(meta(page, 'description').length).toBeLessThanOrEqual(165);
+    expect(page).toContain('<link rel="canonical" href="https://getpreink.com/microblading-consent-form/"');
+  });
+
+  it('covers the phrases in its keyword group', () => {
+    for (const phrase of ['microblading consent form', 'powder', 'ombre', 'combo brows', 'health history', 'photo and video release']) {
+      expect(body).toContain(phrase);
+    }
+  });
+
+  it('links to the kit builder and is linked from every other page', () => {
+    expect(page).toContain('href="/kit/"');
+    for (const other of [home, kit, readFileSync('privacy/index.html', 'utf8')]) {
+      expect(other).toContain('href="/microblading-consent-form/"');
+    }
+  });
+
+  it('has structured data whose questions match the visible ones', () => {
+    const json = page.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1] ?? '';
+    const graph = JSON.parse(json)['@graph'] as { '@type': string; mainEntity?: { name: string; acceptedAnswer: { text: string } }[] }[];
+    const faq = graph.find((node) => node['@type'] === 'FAQPage');
+    const visible = [...page.matchAll(/<summary>([\s\S]*?)<\/summary>\s*<p>([\s\S]*?)<\/p>/g)].map((m) => ({
+      q: text(m[1] ?? '').replace(/&rsquo;|’/g, '’'),
+      a: text(m[2] ?? ''),
+    }));
+    expect(visible.length).toBeGreaterThanOrEqual(4);
+    expect(faq?.mainEntity?.map((e) => ({ q: e.name, a: e.acceptedAnswer.text }))).toEqual(visible);
+    expect(graph.some((node) => node['@type'] === 'BreadcrumbList')).toBe(true);
+  });
+
+  it('makes no compliance promises and states no specific state rule', () => {
+    expect(body).toContain('not legal advice');
+    for (const claim of ['legally compliant', 'guaranteed', 'all 50 states', 'lawyer-approved', 'attorney-approved', 'meets all']) {
+      expect(body).not.toContain(claim);
+    }
+    // A specific age or retention period would be a rule stated from memory.
+    expect(body).not.toMatch(/\b(1[68]|21) years\b|\b\d+ years?\b/);
+  });
+
+  it('has no inline styles, inline scripts or event handlers', () => {
+    expect(page).not.toMatch(/\sstyle="/);
+    expect(page).not.toMatch(/\son[a-z]+="/);
+    for (const tag of page.match(/<script[^>]*>/g) ?? []) expect(tag).toMatch(/type="(module|application\/ld\+json)"/);
+  });
+});
+
+describe('every page is built and listed', () => {
+  const config = readFileSync('vite.config.ts', 'utf8');
+  const sitemap = readFileSync('public/sitemap.xml', 'utf8');
+
+  it('builds every page in the sitemap', () => {
+    const urls = [...sitemap.matchAll(/<loc>https:\/\/getpreink\.com\/([^<]*)<\/loc>/g)].map((m) => m[1] ?? '');
+    for (const path of urls) expect(config).toContain(`'${path}index.html'`);
+  });
+});
+
+describe('photos and motion', () => {
+  const css = readFileSync('src/styles/landing.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+    // Keyframes only run under .js-motion selectors, so leave them out of the check.
+    .replace(/@keyframes[^{]*\{(?:[^{}]*\{[^}]*\})*[^}]*\}/g, '');
+  const pages = { home, guide: readFileSync('microblading-consent-form/index.html', 'utf8') };
+
+  it('every photo has a size, a description, lazy loading and both file sizes on disk', () => {
+    let count = 0;
+    for (const page of Object.values(pages)) {
+      for (const tag of page.match(/<img [^>]*>/g) ?? []) {
+        count += 1;
+        expect(tag).toMatch(/\swidth="\d+"/);
+        expect(tag).toMatch(/\sheight="\d+"/);
+        expect(tag).toMatch(/\salt="[^"]{20,}"/);
+        expect(tag).toContain('loading="lazy"');
+        for (const [, src] of tag.matchAll(/(\/photos\/[a-z-]+-\d+\.jpg)/g)) {
+          const bytes = readFileSync(`public${src}`);
+          expect(bytes.byteLength).toBeLessThan(160 * 1024);
+        }
+      }
+    }
+    expect(count).toBe(4);
+  });
+
+  it('only hides content for animation when the script has switched motion on', () => {
+    const hiding = css.match(/[^{}]*\{[^}]*opacity:\s*0[;\s][^}]*\}/g) ?? [];
+    for (const rule of hiding) {
+      const selector = rule.slice(0, rule.indexOf('{')).trim();
+      if (/(^|\s)from$/.test(selector) || selector.includes('is-swapping')) continue;
+      expect(selector).toContain('.js-motion');
+    }
+  });
+});

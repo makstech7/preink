@@ -13,7 +13,7 @@ The owner is not a developer. Their wife is a working PMU artist, which is the i
 - When a message is ambiguous, say the two readings briefly, pick the likelier one, and keep moving. Ask a question only when the answer changes what gets built.
 - They prefer seeing a working result over reading plans. Build, then show it in the browser pane.
 - Show the "Still needed" list (bottom of this file) at the end of every phase, and keep it current.
-- Before spending Higgsfield credits, state the credit cost and wait for a yes. So far 0.5 credits were spent on the share image (`public/og.jpg`, source options in `design/share-image/`).
+- Before spending Higgsfield credits, state the credit cost and wait for a yes. So far 1.5 credits were spent: 0.5 on the share image (`public/og.jpg`, sources in `design/share-image/`) and 1 on four studio photos (`public/photos/`, sources in `design/photos/`). A 5-second video costs about 35 credits; it was deferred because it slows the page on phones.
 - They said: do not make it look like AI wrote it. That covers design and copy. See "Design and copy" below.
 
 ## How to work
@@ -97,6 +97,9 @@ For Cloudflare, use the `cf` CLI unless the project has a Wrangler configuration
 - Vocabulary: "pigment", "clients", "studio". Never tattoo-shop wording.
 - Copy is plain and specific. Say what the thing is and what it does. No hype words, no rhetorical questions, no promises about results.
 - Mobile first. Check every change at 375px wide.
+- Never generate pictures of brows, lips, faces, artists, clients or before-and-after results. Visitors would read them as real work. Atmosphere photos only: desks, tools, cards, rooms, with no text, people or hands.
+- Photos: add phone (640) and desktop (1024) JPG sizes in `public/photos/`, with width, height, a real description and `loading="lazy"`. Tests check this.
+- Motion lives in `src/landing.ts`: `data-reveal` eases sections in, `data-live-sample` types the studio name and cycles the five styles. Hidden starting states must sit under `.js-motion`, which is only added when the visitor has not asked to reduce motion. A test enforces this.
 
 ## Phases
 
@@ -111,8 +114,18 @@ Stop and show a working result at the end of each phase.
 ## Queued next, in this order
 
 1. Marketing claims review of the landing page: a first pass is done, without the skill. Fixed: "Everything you hand a client" (overclaim), "the statements it requires" (implied completeness, now "state-specific statements found in those sources"), "the paperwork your course did not hand you" (assumption), "about two minutes" (unmeasured, now "a few minutes"). Still open: the page describes payment, email delivery and re-download, which are not built, and the "traced to official sources and checked by a person" claim needs the research records to exist before go-live. Re-run with `product-legal:marketing-claims-review` before launch.
-2. Competitive brief: what other PMU form packs sell, at what price, and where PreInk differs. Use the `marketing:competitive-brief` skill.
-3. Keyword clustering for the extra search pages (for example "microblading consent form template", "lip blush aftercare card"). Use `searchfit-seo:keyword-clustering`, then `searchfit-seo:create-content`.
+2. Competitive brief: done 2026-11-17. Findings: Etsy Canva form bundles sell for about $5 to $15 with no branding done for the buyer and no state handling; the closest bundle (Hannce PMU Business Bundle) is £47 for seven forms and five policies; trainer guides and courses cover business setup; PMU Forms is a digital-signing app at about $14.99 a month or $119.99 a year and says its forms were reviewed by health officials. Keep $47. Lead with: finished and branded without Canva, every page previewed before paying, honest state labeling, and a launch plan. Gap to consider later: digital signing on a tablet.
+3. Keyword clustering: done 2026-11-17, without volume data (no keyword tool connected). One page per cluster, each linking to /kit/. Build in this order:
+   1. `/microblading-consent-form/`: built 2026-11-17. Use it as the pattern for the rest: breadcrumb, two sample pages, what it covers, a "before you use it" checklist that names no specific state rule, FAQ with matching FAQPage data, closing link to /kit/, footer link on every page, sitemap entry, tests in `tests/site.test.ts`.
+   2. `/how-to-price-permanent-makeup/` with a free working pricing calculator (price list, price menu template)
+   3. `/pmu-client-intake-form/` (health history, consultation form, what to ask before a procedure)
+   4. `/lip-blush-consent-form/`
+   5. `/pmu-booking-policies/` (deposit, cancellation, no-show, touch-up)
+   6. `/pmu-aftercare-cards/` (brows, lips, eyeliner; healing instructions need review by a working artist)
+   7. `/pmu-model-call-script/`
+   8. `/start-a-pmu-business/` (checklist, first clients)
+   9. Later, low demand: eyeliner consent, photo release.
+   The home page keeps "permanent makeup consent form", "PMU consent form" and "PMU forms"; no new page may target those (it would compete with the home page). Pages describe what a form covers and show branded samples; they never publish the full legal wording, never state a state rule from memory, and never claim compliance. Use `searchfit-seo:create-content` for each page and add every page to `public/sitemap.xml`.
 4. The AI step in the kit builder: the artist describes their studio in a sentence or two, and AI suggests a tagline, logo lettering and color, a style, starting prices, policy tone, and a personalized model-call script and first-clients plan. Each suggestion can be accepted or changed. Needs a Worker endpoint and the owner's Anthropic API key.
 5. Put Phase 1 on preink.dev behind Cloudflare Access so only the owner can open it.
 
@@ -123,7 +136,7 @@ Keep this list current and show it at the end of every phase.
 - A git commit as a restore point. Nothing has been committed yet.
 - The 3 launch states. The owner wants to sell to all of the US from day one, with every state on the general version until verified. Proposed first three: Texas, Florida and the state where the owner's wife works (not yet named). Ask before assuming.
 - Anthropic API key, for the AI step
-- GitHub account, and a Stripe account in test mode, before Phase 2
+- A Stripe account in test mode, before Phase 2 (GitHub is done: `makstech7/preink`, pushed)
 - A working support@getpreink.com address; the legal pages already show it
 - Email sending from getpreink.com (Resend) with its DNS records
 - A GoHighLevel sub-account with an inbound webhook

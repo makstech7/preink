@@ -462,3 +462,212 @@ h3 {
     transition: none;
   }
 }
+
+/* ---------- Guide pages ---------- */
+
+.crumbs {
+  display: flex;
+  gap: 8px;
+  padding-top: 18px;
+  font-size: 13px;
+  color: var(--soft);
+}
+.crumbs a {
+  color: var(--soft);
+  text-underline-offset: 3px;
+}
+
+.guide-hero {
+  padding-top: 24px;
+}
+
+/* Two sample pages, overlapping */
+.pair {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 0.95;
+}
+.pair .sample {
+  position: absolute;
+  width: 62%;
+}
+.pair-a {
+  left: 2%;
+  top: 4%;
+  transform: rotate(-4deg);
+}
+.pair-b {
+  right: 2%;
+  top: 8%;
+  transform: rotate(2.5deg);
+}
+
+.guide-cols {
+  display: grid;
+  gap: 28px;
+}
+
+.guide-text p {
+  margin: 0 0 16px;
+  font-size: 17px;
+  line-height: 1.6;
+  max-width: 38em;
+}
+.guide-text p:last-child {
+  margin-bottom: 0;
+}
+
+.parts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: part;
+}
+.parts li {
+  counter-increment: part;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  column-gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.parts li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.parts li::before {
+  content: counter(part, decimal-leading-zero);
+  grid-row: span 2;
+  padding-top: 3px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clay);
+  font-variant-numeric: tabular-nums;
+}
+.parts h3 {
+  font-family: var(--serif);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+.parts p {
+  margin: 4px 0 0;
+  font-size: 16px;
+  color: var(--soft);
+}
+
+.closing-more {
+  margin-top: 18px;
+  margin-bottom: 0;
+  font-size: 15px;
+}
+
+@media (min-width: 1000px) {
+  .guide-cols {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 72px;
+    align-items: start;
+  }
+}
+
+/* ---------- Photos ---------- */
+
+.photo {
+  margin: 0;
+}
+.photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  background: #e9e1d7;
+}
+.photo-wide {
+  margin: 32px 0 8px;
+}
+.photo-wide img {
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+.guide-text .photo {
+  margin-top: 24px;
+}
+
+@media (min-width: 700px) {
+  .photo-wide img {
+    aspect-ratio: 21 / 9;
+  }
+}
+
+.live-label {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- Motion ----------
+   Starting states apply only under .js-motion, which the script adds when the
+   visitor has not asked to reduce motion. Without it, everything is visible. */
+
+.js-motion [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.js-motion [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+.js-motion .how li:nth-child(2),
+.js-motion .who > div:nth-child(2),
+.js-motion .inside-col:nth-child(2),
+.js-motion .looks figure:nth-child(2) {
+  transition-delay: 0.08s;
+}
+.js-motion .how li:nth-child(3),
+.js-motion .who > div:nth-child(3),
+.js-motion .inside-col:nth-child(3),
+.js-motion .looks figure:nth-child(3) {
+  transition-delay: 0.16s;
+}
+.js-motion .looks figure:nth-child(4) {
+  transition-delay: 0.24s;
+}
+.js-motion .looks figure:nth-child(5) {
+  transition-delay: 0.32s;
+}
+
+/* Sample pages settle into place when the page opens. With no "to" frame,
+   each one ends at its own resting angle. */
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(28px) rotate(0deg) scale(0.97);
+  }
+}
+.js-motion .fan .sample,
+.js-motion .pair .sample {
+  animation: settle 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.js-motion .fan-a,
+.js-motion .pair-a {
+  animation-delay: 0.15s;
+}
+.js-motion .fan-b {
+  animation-delay: 0.3s;
+}
+.js-motion .pair-b {
+  animation-delay: 0.3s;
+}
+
+/* The live sample fades between styles. */
+[data-live-sample] .page {
+  transition: opacity 0.25s ease;
+}
+[data-live-sample].is-swapping .page {
+  opacity: 0;
+}

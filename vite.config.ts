@@ -33,6 +33,7 @@ export default defineConfig({
         privacy: 'privacy/index.html',
         terms: 'terms/index.html',
         refunds: 'refunds/index.html',
+        microblading: 'microblading-consent-form/index.html',
       },
     },
   },
